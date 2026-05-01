@@ -8,6 +8,11 @@ import com.tictactoe.uc.UC2TossAndSymbols;
 import com.tictactoe.uc.UC3ReadUserSlot;
 import com.tictactoe.uc.UC4SlotToIndex;
 import com.tictactoe.uc.UC5ValidateMove;
+import com.tictactoe.uc.UC6PlaceMove;
+import com.tictactoe.uc.UC7ComputerMakesRandomMove;
+import com.tictactoe.uc.UC8ContinuousTurnBasedGameLoop;
+import com.tictactoe.uc.UC9CheckWinningCondition;
+import com.tictactoe.uc.UC10DetectDrawCondition;
 
 public class TicTacToeGame {
     private final char[][] board;
@@ -32,7 +37,8 @@ public class TicTacToeGame {
         System.out.println("User Symbol: " + userSymbol + " | Computer Symbol: " + computerSymbol);
         UC1DisplayBoard.printBoard(board);
 
-        while (true) {
+        boolean gameOver = false;
+        while (!gameOver) {
             if (currentPlayer.equals("User")) {
                 userMove();
             } else {
@@ -42,17 +48,19 @@ public class TicTacToeGame {
             UC1DisplayBoard.printBoard(board);
 
             char currentSymbol = currentPlayer.equals("User") ? userSymbol : computerSymbol;
-            if (hasWinner(currentSymbol)) {
+            if (UC9CheckWinningCondition.hasWon(board, currentSymbol)) {
                 System.out.println(currentPlayer + " wins");
-                break;
+                gameOver = true;
+                continue;
             }
 
-            if (isBoardFull()) {
+            if (UC10DetectDrawCondition.isDraw(board)) {
                 System.out.println("Draw");
-                break;
+                gameOver = true;
+                continue;
             }
 
-            currentPlayer = currentPlayer.equals("User") ? "Computer" : "User";
+            currentPlayer = UC8ContinuousTurnBasedGameLoop.switchPlayer(currentPlayer);
         }
     }
 
@@ -80,49 +88,14 @@ public class TicTacToeGame {
                 continue;
             }
 
-            board[row][col] = userSymbol;
+            UC6PlaceMove.placeMove(board, row, col, userSymbol);
             return;
         }
     }
 
     private void computerMove() {
-        while (true) {
-            int slot = random.nextInt(9) + 1;
-            int[] index = UC4SlotToIndex.toIndex(slot);
-            int row = index[0];
-            int col = index[1];
-
-            if (UC5ValidateMove.isValidMove(board, row, col)) {
-                board[row][col] = computerSymbol;
-                System.out.println("Computer chose slot: " + slot);
-                return;
-            }
-        }
-    }
-
-    private boolean hasWinner(char symbol) {
-        for (int i = 0; i < 3; i++) {
-            if (board[i][0] == symbol && board[i][1] == symbol && board[i][2] == symbol) {
-                return true;
-            }
-            if (board[0][i] == symbol && board[1][i] == symbol && board[2][i] == symbol) {
-                return true;
-            }
-        }
-
-        return (board[0][0] == symbol && board[1][1] == symbol && board[2][2] == symbol)
-                || (board[0][2] == symbol && board[1][1] == symbol && board[2][0] == symbol);
-    }
-
-    private boolean isBoardFull() {
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 3; j++) {
-                if (board[i][j] == '-') {
-                    return false;
-                }
-            }
-        }
-        return true;
+        int slot = UC7ComputerMakesRandomMove.makeRandomValidMove(board, random, computerSymbol);
+        System.out.println("Computer chose slot: " + slot);
     }
 
     public static void main(String[] args) {
